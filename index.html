@@ -1,31 +1,31 @@
 <!DOCTYPE html>
 <html lang="en-us">
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Unity WebGL Player | Sunny Land</title>
-    <link rel="shortcut icon" href="TemplateData/favicon.ico" />
-    <link rel="stylesheet" href="TemplateData/style.css" />
-    <script src="TemplateData/UnityProgress.js"></script>
-    <script src="Build/UnityLoader.js"></script>
-    <script>
-      var gameInstance = UnityLoader.instantiate(
-        'gameContainer',
-        'Build/SunnyLand WebGL build v1.0.json',
-        { onProgress: UnityProgress }
-      );
-    </script>
-  </head>
-  <body>
-    <a href="/game2048/index.html">Game 2048</a>
-    <a href="/first-game/index.html">My First Game</a>
-    <div class="webgl-content">
-      <div id="gameContainer" style="width: 960px; height: 600px"></div>
-      <div class="footer">
-        <div class="webgl-logo"></div>
-        <div class="fullscreen" onclick="gameInstance.SetFullscreen(1)"></div>
-        <div class="title">Sunny Land</div>
-      </div>
-    </div>
-  </body>
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Unity WebGL Player | Sunny Land</title>
+  <link rel="shortcut icon" href="TemplateData/favicon.ico" />
+  <link rel="stylesheet" href="TemplateData/style.css" />
+  <script src="TemplateData/UnityProgress.js"></script>
+  <script src="Build/UnityLoader.js"></script>
+  <script>
+    var gameInstance = UnityLoader.instantiate(
+      'gameContainer',
+      'Build/SunnyLand WebGL build v1.0.json',
+      { onProgress: UnityProgress }
+    );
+  </script>
+</head>
+
+<body>
+  <h1>Welcome to LedWar Games, here are some of my games:</h1>
+  <ul>
+    <li><a href="/first-game/">2D Platformer Demo</a></li>
+    <li><a href="/game2048/">2048</a></li>
+    <li><a href="/sunny-land/">Sunny Land Demo</a></li>
+    <li><a href="https://play.google.com/store/apps/details?id=com.tuando.ludo&hl=en">Sweety Ludo</a></li>
+  </ul>
+</body>
+
 </html>
