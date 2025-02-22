@@ -11,7 +11,10 @@ System.register([], function (_export, _context) {
   return {
     setters: [],
     execute: function () {
-      STATIC_DOMAIN = window.APP_VERSION ? window.location.origin + window.location.pathname + window.APP_VERSION + '/' : '';
+      //const STATIC_DOMAIN = window.APP_VERSION
+      //? window.location.origin + window.location.pathname + window.APP_VERSION + '/'
+      //: '';
+      STATIC_DOMAIN = 'https://tuan243.github.io/sl-assets/';
       _export("Application", Application = /*#__PURE__*/function () {
         function Application() {
           _classCallCheck(this, Application);
