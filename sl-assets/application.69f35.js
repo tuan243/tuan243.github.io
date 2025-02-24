@@ -35,7 +35,6 @@ System.register([], function (_export, _context) {
             // do custom logic
             cc.settings.overrideSettings('assets', 'server', STATIC_DOMAIN);
             // do custom logic
-            cc.AssetManager.BuiltinBundleName.INTERNAL = STATIC_DOMAIN + 'assets/internal';
           }
         }, {
           key: "onPostSystemInit",
@@ -45,6 +44,8 @@ System.register([], function (_export, _context) {
         }, {
           key: "start",
           value: function start() {
+            cc.AssetManager.BuiltinBundleName.INTERNAL = STATIC_DOMAIN + 'assets/internal';
+            console.log('bundleInternal', cc.AssetManager.BuiltinBundleName.INTERNAL);
             return cc.game.init({
               debugMode: false ? cc.DebugMode.INFO : cc.DebugMode.ERROR,
               settingsPath: this.settingsPath,
@@ -62,7 +63,7 @@ System.register([], function (_export, _context) {
                   showFPS: this.showFPS
                 },
                 rendering: {
-                  effectSettingsPath: 'https://tuan243.github.io/sl-assets/src/effect.bin'
+                  effectSettingsPath: "https://tuan243.github.io/sl-assets/src/effect.bin"
                 }
               }
             }).then(function () {
