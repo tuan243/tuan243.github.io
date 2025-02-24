@@ -54,7 +54,7 @@
       STATIC_DOMAIN + '/src/system.bundle.543e6.js',
       () => {
         setTimeout(() => {
-          System.import(STATIC_DOMAIN + '/index.537c1.js').catch(function (err) {
+          System.import(STATIC_DOMAIN + '/index.7a1bf.js').catch(function (err) {
             console.error('SystemJS error', err);
           });
         }, 100);

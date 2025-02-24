@@ -18,7 +18,7 @@ System.register([], function (_export, _context) {
       _export("Application", Application = /*#__PURE__*/function () {
         function Application() {
           _classCallCheck(this, Application);
-          this.settingsPath = STATIC_DOMAIN + 'src/settings.f1a3d.json';
+          this.settingsPath = STATIC_DOMAIN + 'src/settings.fbe84.json';
           this.showFPS = false;
         }
         _createClass(Application, [{
@@ -49,9 +49,6 @@ System.register([], function (_export, _context) {
               debugMode: false ? cc.DebugMode.INFO : cc.DebugMode.ERROR,
               settingsPath: this.settingsPath,
               overrideSettings: {
-                // assets: {
-                //      preloadBundles: [{ bundle: 'main', version: 'xxx' }],
-                // }
                 assets: {
                   preloadBundles: [{
                     bundle: STATIC_DOMAIN + 'assets/l10n'
@@ -63,6 +60,9 @@ System.register([], function (_export, _context) {
                 },
                 profiling: {
                   showFPS: this.showFPS
+                },
+                rendering: {
+                  effectSettingsPath: 'https://tuan243.github.io/sl-assets/src/effect.bin'
                 }
               }
             }).then(function () {
