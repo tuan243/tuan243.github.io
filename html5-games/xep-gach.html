@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stack - Xếp Gạch Khối</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #1e1e24;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        #gameCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        #ui {
+            position: absolute;
+            top: 45px;
+            width: 100%;
+            text-align: center;
+            color: #ffffff;
+            font-weight: 700;
+            pointer-events: none;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            z-index: 5;
+        }
+        #score {
+            font-size: 5rem;
+            line-height: 1;
+        }
+        #highScore {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.75);
+            margin-top: 8px;
+        }
+        #msg-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.65);
+            padding: 24px 36px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+            z-index: 10;
+        }
+        #msg-title {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+        #msg-desc {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="ui">
+        <div id="score">0</div>
+        <div id="highScore">Kỷ lục: 0</div>
+    </div>
+
+    <div id="msg-box">
+        <div id="msg-title">STACK</div>
+        <div id="msg-desc">Chạm màn hình hoặc nhấn Space để chơi</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const highScoreEl = document.getElementById('highScore');
+        const msgBox = document.getElementById('msg-box');
+        const msgTitle = document.getElementById('msg-title');
+        const msgDesc = document.getElementById('msg-desc');
+
+        let width, height;
+        const BOX_HEIGHT = 26;
+        const ORIGIN_SIZE = 180;
+        const SPEED_BASE = 3.5;
+        const BOUND_LIMIT = 260;
+
+        let stack = [];
+        let debris = [];
+        let cameraY = 0;
+        let targetCameraY = 0;
+        let score = 0;
+        let highScore = parseInt(localStorage.getItem('stack_highscore')) || 0;
+        let gameState = 'START';
+        let baseHue = 120;
+
+        highScoreEl.innerText = `Kỷ lục: ${highScore}`;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function getColor(index) {
+            const h = (baseHue + index * 5) % 360;
+            return {
+                top: `hsl(${h}, 75%, 65%)`,
+                left: `hsl(${h}, 75%, 50%)`,
+                right: `hsl(${h}, 75%, 38%)`
+            };
+        }
+
+        // Đỉnh tháp luôn được ghim cố định ở vị trí 55% màn hình
+        function isoProject(x, y, z) {
+            const screenX = width / 2 + (x - y) * 0.866;
+            const screenY = height * 0.55 + (x + y) * 0.5 - (z - cameraY);
+            return { x: screenX, y: screenY };
+        }
+
+        function drawIsoBox(x, y, z, w, d, h, colors) {
+            const p1 = isoProject(x, y, z + h);
+            const p2 = isoProject(x + w, y, z + h);
+            const p3 = isoProject(x + w, y + d, z + h);
+            const p4 = isoProject(x, y + d, z + h);
+
+            // Mặt trên
+            ctx.fillStyle = colors.top;
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.lineTo(p3.x, p3.y);
+            ctx.lineTo(p4.x, p4.y);
+            ctx.closePath();
+            ctx.fill();
+
+            // Mặt trái
+            const p5 = isoProject(x, y + d, z);
+            const p6 = isoProject(x + w, y + d, z);
+
+            ctx.fillStyle = colors.left;
+            ctx.beginPath();
+            ctx.moveTo(p4.x, p4.y);
+            ctx.lineTo(p3.x, p3.y);
+            ctx.lineTo(p6.x, p6.y);
+            ctx.lineTo(p5.x, p5.y);
+            ctx.closePath();
+            ctx.fill();
+
+            // Mặt phải
+            const p7 = isoProject(x + w, y, z);
+
+            ctx.fillStyle = colors.right;
+            ctx.beginPath();
+            ctx.moveTo(p2.x, p2.y);
+            ctx.lineTo(p3.x, p3.y);
+            ctx.lineTo(p6.x, p6.y);
+            ctx.lineTo(p7.x, p7.y);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function resetGame() {
+            stack = [];
+            debris = [];
+            score = 0;
+            scoreEl.innerText = score;
+            baseHue = Math.floor(Math.random() * 360);
+            cameraY = 0;
+            targetCameraY = 0;
+
+            // Khối đế
+            stack.push({
+                x: -ORIGIN_SIZE / 2,
+                y: -ORIGIN_SIZE / 2,
+                z: 0,
+                w: ORIGIN_SIZE,
+                d: ORIGIN_SIZE,
+                colors: getColor(0)
+            });
+
+            addNextLayer();
+        }
+
+        function addNextLayer() {
+            const prev = stack[stack.length - 1];
+            const direction = stack.length % 2 === 1 ? 'x' : 'y';
+            const startPos = -BOUND_LIMIT;
+            const moveSpeed = SPEED_BASE + Math.min(stack.length * 0.08, 4.5);
+
+            stack.push({
+                x: direction === 'x' ? startPos : prev.x,
+                y: direction === 'y' ? startPos : prev.y,
+                z: stack.length * BOX_HEIGHT,
+                w: prev.w,
+                d: prev.d,
+                dir: direction,
+                speed: moveSpeed,
+                colors: getColor(stack.length)
+            });
+
+            // Đồng bộ đích đến của Camera theo độ cao thực tế của khối trên cùng
+            targetCameraY = (stack.length - 1) * BOX_HEIGHT;
+        }
+
+        function placeBlock() {
+            const current = stack[stack.length - 1];
+            const prev = stack[stack.length - 2];
+            const dir = current.dir;
+
+            let diff, overlap;
+
+            if (dir === 'x') {
+                diff = current.x - prev.x;
+                overlap = current.w - Math.abs(diff);
+
+                if (overlap <= 0) {
+                    gameOver();
+                    return;
+                }
+
+                if (Math.abs(diff) > 3) {
+                    const debrisW = Math.abs(diff);
+                    const debrisX = diff > 0 ? prev.x + prev.w : current.x;
+                    
+                    debris.push({
+                        x: debrisX,
+                        y: current.y,
+                        z: current.z,
+                        w: debrisW,
+                        d: current.d,
+                        vz: 0,
+                        colors: current.colors
+                    });
+
+                    current.w = overlap;
+                    if (diff > 0) current.x = prev.x;
+                } else {
+                    current.x = prev.x;
+                }
+            } else {
+                diff = current.y - prev.y;
+                overlap = current.d - Math.abs(diff);
+
+                if (overlap <= 0) {
+                    gameOver();
+                    return;
+                }
+
+                if (Math.abs(diff) > 3) {
+                    const debrisD = Math.abs(diff);
+                    const debrisY = diff > 0 ? prev.y + prev.d : current.y;
+
+                    debris.push({
+                        x: current.x,
+                        y: debrisY,
+                        z: current.z,
+                        w: current.w,
+                        d: debrisD,
+                        vz: 0,
+                        colors: current.colors
+                    });
+
+                    current.d = overlap;
+                    if (diff > 0) current.y = prev.y;
+                } else {
+                    current.y = prev.y;
+                }
+            }
+
+            score++;
+            scoreEl.innerText = score;
+            addNextLayer();
+        }
+
+        function gameOver() {
+            gameState = 'GAMEOVER';
+            const top = stack.pop();
+            
+            debris.push({
+                x: top.x,
+                y: top.y,
+                z: top.z,
+                w: top.w,
+                d: top.d,
+                vz: 0,
+                colors: top.colors
+            });
+
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('stack_highscore', highScore);
+                highScoreEl.innerText = `Kỷ lục: ${highScore}`;
+            }
+
+            setTimeout(() => {
+                msgTitle.innerText = "THUA CUỘC";
+                msgDesc.innerText = `Điểm của bạn: ${score}\nChạm để chơi lại`;
+                msgBox.style.display = 'block';
+            }, 300);
+        }
+
+        function handleTrigger() {
+            if (gameState === 'START' || gameState === 'GAMEOVER') {
+                resetGame();
+                gameState = 'PLAYING';
+                msgBox.style.display = 'none';
+            } else if (gameState === 'PLAYING') {
+                placeBlock();
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                handleTrigger();
+            }
+        });
+
+        window.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            handleTrigger();
+        });
+
+        function loop() {
+            ctx.clearRect(0, 0, width, height);
+
+            // Camera di chuyển êm theo độ cao của tháp
+            cameraY += (targetCameraY - cameraY) * 0.08;
+
+            if (gameState === 'PLAYING') {
+                const current = stack[stack.length - 1];
+                if (current.dir === 'x') {
+                    current.x += current.speed;
+                    if (current.x > BOUND_LIMIT) {
+                        current.x = BOUND_LIMIT;
+                        current.speed = -Math.abs(current.speed);
+                    } else if (current.x < -BOUND_LIMIT) {
+                        current.x = -BOUND_LIMIT;
+                        current.speed = Math.abs(current.speed);
+                    }
+                } else {
+                    current.y += current.speed;
+                    if (current.y > BOUND_LIMIT) {
+                        current.y = BOUND_LIMIT;
+                        current.speed = -Math.abs(current.speed);
+                    } else if (current.y < -BOUND_LIMIT) {
+                        current.y = -BOUND_LIMIT;
+                        current.speed = Math.abs(current.speed);
+                    }
+                }
+            }
+
+            // Vẽ tháp
+            for (let i = 0; i < stack.length; i++) {
+                const b = stack[i];
+                drawIsoBox(b.x, b.y, b.z, b.w, b.d, BOX_HEIGHT, b.colors);
+            }
+
+            // Vẽ và cập nhật mảnh rơi vụn
+            for (let i = debris.length - 1; i >= 0; i--) {
+                const d = debris[i];
+                d.vz -= 0.8;
+                d.z += d.vz;
+                drawIsoBox(d.x, d.y, d.z, d.w, d.d, BOX_HEIGHT, d.colors);
+
+                if (d.z < cameraY - 600) {
+                    debris.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(loop);
+        }
+
+        // Tạo khối chân đế ban đầu
+        stack.push({
+            x: -ORIGIN_SIZE / 2,
+            y: -ORIGIN_SIZE / 2,
+            z: 0,
+            w: ORIGIN_SIZE,
+            d: ORIGIN_SIZE,
+            colors: getColor(0)
+        });
+
+        loop();
+    </script>
+</body>
+</html>
