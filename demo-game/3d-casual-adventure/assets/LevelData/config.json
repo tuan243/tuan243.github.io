@@ -1,0 +1,1 @@
+{"importBase":"import","nativeBase":"native","name":"LevelData","deps":[],"uuids":["02UYFJfr5KQ50EYaUOs8LA","eaCLzPNoFKwYqiwJicNsyW"],"paths":{"0":["MapData",0,1],"1":["LevelData",0,1]},"scenes":{},"packs":{},"versions":{"import":[],"native":[]},"redirect":[],"debug":false,"extensionMap":{},"hasPreloadScript":true,"dependencyRelationships":{},"types":["cc.JsonAsset"]}

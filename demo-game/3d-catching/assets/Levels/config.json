@@ -1,0 +1,1 @@
+{"importBase":"import","nativeBase":"native","name":"Levels","deps":[],"uuids":["31nQ1Msh5I15DbJsXngxLL","ae/Uhg91FIV7b3mIhlMuqN"],"paths":{"0":["level1",0,1],"1":["level2",0,1]},"scenes":{},"packs":{},"versions":{"import":[],"native":[]},"redirect":[],"debug":false,"extensionMap":{},"hasPreloadScript":true,"dependencyRelationships":{},"types":["cc.TextAsset"]}
